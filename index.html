@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ServLoci Trade - Portfolio Manager App</title>
+    <meta name="description" content="Professional portfolio management app for traders and investors. Track holdings, manage funds, and discover instruments with ServLoci Trade.">
+    <meta name="keywords" content="portfolio manager, trading app, investment tracker, stock market, mutual funds, ServLoci">
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="ServLoci Trade - Portfolio Manager">
+    <meta property="og:description" content="Professional portfolio management app for traders and investors">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ivikasavnish.github.io">
+    <meta property="og:image" content="https://ivikasavnish.github.io/assets/app-icon.png">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="https://ivikasavnish.github.io/assets/favicon.ico">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary-color: #2196F3;
+            --secondary-color: #4CAF50;
+            --accent-color: #FF9800;
+            --text-dark: #333;
+            --text-light: #666;
+            --bg-light: #f8f9fa;
+            --white: #ffffff;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --shadow-hover: 0 8px 15px rgba(0, 0, 0, 0.15);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            line-height: 1.6;
+            color: var(--text-dark);
+            background-color: var(--white);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            padding: 80px 0;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 3.5em;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 1.3em;
+            margin-bottom: 30px;
+            opacity: 0.9;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+        
+        .btn-primary {
+            background: var(--white);
+            color: var(--primary-color);
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid var(--white);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--white);
+            color: var(--primary-color);
+        }
+        
+        /* Navigation */
+        .nav {
+            background: var(--white);
+            padding: 20px 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .nav-logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        /* Sections */
+        .section {
+            padding: 80px 0;
+        }
+        
+        .section:nth-child(even) {
+            background: var(--bg-light);
+        }
+        
+        .section h2 {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 50px;
+            color: var(--text-dark);
+        }
+        
+        .section h3 {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        /* Features Grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+            margin-top: 50px;
+        }
+        
+        .feature-card {
+            background: var(--white);
+            padding: 40px 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-hover);
+        }
+        
+        .feature-icon {
+            font-size: 3em;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        /* Screenshots */
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .screenshot {
+            background: var(--white);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+        
+        .screenshot:hover {
+            transform: scale(1.05);
+        }
+        
+        .screenshot img {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+        }
+        
+        .screenshot-caption {
+            padding: 20px;
+            text-align: center;
+            font-weight: 600;
+        }
+        
+        /* Download Section */
+        .download-section {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: var(--white);
+            text-align: center;
+        }
+        
+        .download-section h2 {
+            color: var(--white);
+        }
+        
+        .download-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 50px;
+        }
+        
+        .download-card {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+        }
+        
+        /* Footer */
+        .footer {
+            background: var(--text-dark);
+            color: var(--white);
+            padding: 60px 0 30px;
+        }
+        
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+            margin-bottom: 40px;
+        }
+        
+        .footer-section h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+        
+        .footer-section ul {
+            list-style: none;
+        }
+        
+        .footer-section ul li {
+            margin-bottom: 10px;
+        }
+        
+        .footer-section a {
+            color: var(--white);
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+        
+        .footer-section a:hover {
+            opacity: 1;
+        }
+        
+        .footer-bottom {
+            text-align: center;
+            padding-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            opacity: 0.8;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5em;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .screenshots {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav">
+        <div class="container">
+            <div class="nav-logo">ServLoci Trade</div>
+            <ul class="nav-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#screenshots">Screenshots</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="#contact">Contact</a></li>
+                <li><a href="privacy-policy/">Privacy Policy</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1>ServLoci Trade</h1>
+            <p>Professional Portfolio Manager for Smart Investors</p>
+            <p>Track holdings, manage funds, and discover instruments with our comprehensive trading app</p>
+            <div class="cta-buttons">
+                <a href="#download" class="btn btn-primary">Download Now</a>
+                <a href="#features" class="btn btn-secondary">Learn More</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Features Section -->
+    <section id="features" class="section">
+        <div class="container">
+            <h2>Powerful Features</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📊</div>
+                    <h3>Portfolio Overview</h3>
+                    <p>Get a comprehensive view of your investments with real-time portfolio tracking, performance analytics, and visual charts.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">💰</div>
+                    <h3>Fund Management</h3>
+                    <p>Efficiently manage your mutual funds, ETFs, and other investment vehicles with advanced filtering and categorization.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">👥</div>
+                    <h3>Member Management</h3>
+                    <p>Organize and manage team members, track their contributions, and maintain detailed member profiles.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🏦</div>
+                    <h3>Investment JARs</h3>
+                    <p>Create and manage investment JARs for different financial goals with systematic investment planning.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Instrument Discovery</h3>
+                    <p>Discover new investment opportunities with our comprehensive instrument search and analysis tools.</p>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📱</div>
+                    <h3>Mobile Optimized</h3>
+                    <p>Access your portfolio anywhere with our mobile-first design, ensuring seamless experience across all devices.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section id="screenshots" class="section">
+        <div class="container">
+            <h2>App Screenshots</h2>
+            <div class="screenshots">
+                <div class="screenshot fade-in">
+                    <img src="https://via.placeholder.com/300x600/2196F3/ffffff?text=Dashboard" alt="Dashboard Screenshot">
+                    <div class="screenshot-caption">Dashboard Overview</div>
+                </div>
+                
+                <div class="screenshot fade-in">
+                    <img src="https://via.placeholder.com/300x600/4CAF50/ffffff?text=Holdings" alt="Holdings Screenshot">
+                    <div class="screenshot-caption">Holdings Management</div>
+                </div>
+                
+                <div class="screenshot fade-in">
+                    <img src="https://via.placeholder.com/300x600/FF9800/ffffff?text=Funds" alt="Funds Screenshot">
+                    <div class="screenshot-caption">Fund Management</div>
+                </div>
+                
+                <div class="screenshot fade-in">
+                    <img src="https://via.placeholder.com/300x600/9C27B0/ffffff?text=Profile" alt="Profile Screenshot">
+                    <div class="screenshot-caption">User Profile</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section id="download" class="section download-section">
+        <div class="container">
+            <h2>Download ServLoci Trade</h2>
+            <p>Get started with professional portfolio management today</p>
+            
+            <div class="download-options">
+                <div class="download-card fade-in">
+                    <h3>Google Play Store</h3>
+                    <p>Download the official Android app from Google Play Store</p>
+                    <a href="https://play.google.com/store/apps/details?id=in.servloci.freeservlocitrade" class="btn btn-primary" target="_blank">
+                        Download on Google Play
+                    </a>
+                </div>
+                
+                <div class="download-card fade-in">
+                    <h3>App Store</h3>
+                    <p>Coming soon to iOS App Store</p>
+                    <a href="#" class="btn btn-secondary" disabled>
+                        Coming Soon
+                    </a>
+                </div>
+                
+                <div class="download-card fade-in">
+                    <h3>Web Version</h3>
+                    <p>Access your portfolio from any web browser</p>
+                    <a href="#" class="btn btn-secondary" disabled>
+                        Coming Soon
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="section">
+        <div class="container">
+            <h2>Get in Touch</h2>
+            <div class="features-grid">
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📧</div>
+                    <h3>Email Support</h3>
+                    <p>Get help with your account or technical issues</p>
+                    <a href="mailto:support@servloci.in" class="btn btn-primary">support@servloci.in</a>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">🌐</div>
+                    <h3>Website</h3>
+                    <p>Visit our main website for more information</p>
+                    <a href="https://servloci.in" class="btn btn-primary" target="_blank">servloci.in</a>
+                </div>
+                
+                <div class="feature-card fade-in">
+                    <div class="feature-icon">📄</div>
+                    <h3>Privacy Policy</h3>
+                    <p>Read our privacy policy and data handling practices</p>
+                    <a href="privacy-policy/" class="btn btn-primary">View Privacy Policy</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>ServLoci Trade</h3>
+                    <p>Professional portfolio management app for traders and investors. Track holdings, manage funds, and discover instruments.</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#screenshots">Screenshots</a></li>
+                        <li><a href="#download">Download</a></li>
+                        <li><a href="privacy-policy/">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><a href="mailto:support@servloci.in">support@servloci.in</a></li>
+                        <li><a href="https://servloci.in" target="_blank">servloci.in</a></li>
+                        <li>ServLoci Technologies, India</li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h3>Download</h3>
+                    <ul>
+                        <li><a href="https://play.google.com/store/apps/details?id=in.servloci.freeservlocitrade" target="_blank">Google Play Store</a></li>
+                        <li><a href="#">App Store (Coming Soon)</a></li>
+                        <li><a href="#">Web Version (Coming Soon)</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 ServLoci Technologies. All rights reserved.</p>
+                <p>Package Name: in.servloci.freeservlocitrade</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Add fade-in animation on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('fade-in');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.fade-in').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html> 
