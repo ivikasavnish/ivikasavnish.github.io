@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Secure Trading Credentials Manager</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .security-badge {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+        
+        .security-info {
+            background: #e8f5e8;
+            border: 2px solid #27ae60;
+            color: #27ae60;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            text-align: left;
+        }
+        
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #bdc3c7;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        
+        .password-input {
+            position: relative;
+        }
+        
+        .toggle-password {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #7f8c8d;
+            font-size: 18px;
+        }
+        
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 25px 0;
+        }
+        
+        button {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .output-container {
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border: 2px solid #ecf0f1;
+        }
+        
+        .qr-section {
+            margin-bottom: 25px;
+        }
+        
+        #qrcode {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .encrypted-output {
+            background: #2c3e50;
+            color: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            text-align: left;
+            margin: 15px 0;
+            word-break: break-all;
+            line-height: 1.4;
+            border: 2px solid #34495e;
+        }
+        
+        .copy-btn {
+            background: #95a5a6;
+            padding: 8px 15px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 2px solid #ffeaa7;
+            color: #856404;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            gap: 10px;
+        }
+        
+        .step {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #bdc3c7;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .step.active {
+            background: #3498db;
+        }
+        
+        .step.completed {
+            background: #27ae60;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="security-badge">
+            🔒 AES-256 Encrypted • Zero Cloud Storage
+        </div>
+        
+        <h1>🛡️ Secure Trading Credentials</h1>
+        
+        <div class="security-info">
+            <strong>🔐 Security Features:</strong><br>
+            • AES-256 encryption with your master password<br>
+            • Credentials never stored in plain text<br>
+            • QR codes expire automatically<br>
+            • No cloud storage - everything local<br>
+            • Encrypted payload includes integrity checks
+        </div>
+        
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+        </div>
+        
+        <div class="warning">
+            ⚠️ <strong>SECURITY REMINDER:</strong> Use this tool only on your secure device. Clear browser data after use.
+        </div>
+        
+        <form id="credentialsForm">
+            <div class="input-group">
+                <label for="masterPassword">🔑 Master Password (for encryption):</label>
+                <div class="password-input">
+                    <input type="password" id="masterPassword" placeholder="Create a strong master password" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword('masterPassword')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="clientId">📋 Client ID:</label>
+                <input type="text" id="clientId" placeholder="Enter your client ID" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="clientSecret">🔐 Client Secret:</label>
+                <div class="password-input">
+                    <input type="password" id="clientSecret" placeholder="Enter your client secret" required>
+                    <button type="button" class="toggle-password" onclick="togglePassword('clientSecret')">👁️</button>
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="environment">🌍 Environment:</label>
+                <select id="environment">
+                    <option value="production">Production</option>
+                    <option value="sandbox">Sandbox</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label for="expiryMinutes">⏰ QR Code Expiry (minutes):</label>
+                <select id="expiryMinutes">
+                    <option value="5">5 minutes</option>
+                    <option value="10" selected>10 minutes</option>
+                    <option value="30">30 minutes</option>
+                    <option value="60">1 hour</option>
+                </select>
+            </div>
+            
+            <div class="btn-group">
+                <button type="submit" class="btn-success">🔒 Generate Secure QR</button>
+                <button type="button" onclick="clearAll()" class="btn-danger">🗑️ Clear All Data</button>
+                <button type="button" onclick="forceOfflineMode()" style="background: linear-gradient(135deg, #f39c12, #e67e22);">📡 Force Offline</button>
+            </div>
+        </form>
+        
+        <div id="outputContainer" class="output-container hidden">
+            <div class="qr-section">
+                <h3>📱 Scan with Flutter App</h3>
+                <div id="countdown" style="color: #e74c3c; font-weight: bold; margin: 10px 0;"></div>
+                <div id="qrcode"></div>
+            </div>
+            
+            <div>
+                <h4>🔐 Encrypted Payload (for manual entry):</h4>
+                <div class="encrypted-output" id="encryptedOutput"></div>
+                <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Encrypted Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let countdownInterval;
+        let encryptedData = '';
+        
+        function togglePassword(fieldId) {
+            const field = document.getElementById(fieldId);
+            const button = field.nextElementSibling;
+            
+            if (field.type === 'password') {
+                field.type = 'text';
+                button.textContent = '🙈';
+            } else {
+                field.type = 'password';
+                button.textContent = '👁️';
+            }
+        }
+        
+        function updateSteps(currentStep) {
+            for (let i = 1; i <= 3; i++) {
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('active', 'completed');
+                
+                if (i < currentStep) {
+                    step.classList.add('completed');
+                } else if (i === currentStep) {
+                    step.classList.add('active');
+                }
+            }
+        }
+        
+        document.getElementById('credentialsForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const masterPassword = document.getElementById('masterPassword').value;
+            const clientId = document.getElementById('clientId').value.trim();
+            const clientSecret = document.getElementById('clientSecret').value.trim();
+            const environment = document.getElementById('environment').value;
+            const expiryMinutes = parseInt(document.getElementById('expiryMinutes').value);
+            
+            if (!masterPassword || !clientId || !clientSecret) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (masterPassword.length < 8) {
+                alert('Master password must be at least 8 characters long');
+                return;
+            }
+            
+            updateSteps(2);
+            
+            // Create payload with expiry
+            const expiryTime = new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString();
+            const payload = {
+                clientId: clientId,
+                clientSecret: clientSecret,
+                environment: environment,
+                createdAt: new Date().toISOString(),
+                expiresAt: expiryTime,
+                version: '1.0',
+                checksum: CryptoJS.SHA256(clientId + clientSecret + environment).toString()
+            };
+            
+            // Encrypt the payload
+            const payloadString = JSON.stringify(payload);
+            const encrypted = CryptoJS.AES.encrypt(payloadString, masterPassword).toString();
+            
+            // Create final secure package
+            const securePackage = {
+                data: encrypted,
+                timestamp: Date.now(),
+                expires: Date.now() + (expiryMinutes * 60 * 1000)
+            };
+            
+            encryptedData = JSON.stringify(securePackage);
+            
+            // Generate QR code
+            document.getElementById('qrcode').innerHTML = '';
+            
+            QRCode.toCanvas(document.createElement('canvas'), encryptedData, {
+                width: 280,
+                height: 280,
+                colorDark: '#2c3e50',
+                colorLight: '#ffffff',
+                margin: 3,
+                correctLevel: QRCode.CorrectLevel.H
+            }, function(error, canvas) {
+                if (error) {
+                    console.error(error);
+                    alert('Error generating QR code');
+                    return;
+                }
+                
+                updateSteps(3);
+                
+                document.getElementById('qrcode').appendChild(canvas);
+                document.getElementById('encryptedOutput').textContent = encryptedData;
+                document.getElementById('outputContainer').classList.remove('hidden');
+                
+                // Start countdown
+                startCountdown(expiryMinutes * 60);
+                
+                // Clear sensitive form data
+                setTimeout(() => {
+                    document.getElementById('masterPassword').value = '';
+                    document.getElementById('clientSecret').value = '';
+                }, 2000);
+            });
+        });
+        
+        function startCountdown(seconds) {
+            const countdownEl = document.getElementById('countdown');
+            
+            function updateCountdown() {
+                const minutes = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                countdownEl.textContent = `⏰ Expires in: ${minutes}:${secs.toString().padStart(2, '0')}`;
+                
+                if (seconds <= 0) {
+                    countdownEl.textContent = '⚠️ QR Code has expired!';
+                    countdownEl.style.color = '#e74c3c';
+                    clearInterval(countdownInterval);
+                    return;
+                }
+                
+                if (seconds <= 60) {
+                    countdownEl.style.color = '#e74c3c';
+                } else if (seconds <= 300) {
+                    countdownEl.style.color = '#f39c12';
+                }
+                
+                seconds--;
+            }
+            
+            updateCountdown();
+            countdownInterval = setInterval(updateCountdown, 1000);
+        }
+        
+        function copyToClipboard() {
+            navigator.clipboard.writeText(encryptedData).then(() => {
+                const btn = event.target;
+                const originalText = btn.textContent;
+                btn.textContent = '✅ Copied!';
+                btn.style.background = '#27ae60';
+                
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.style.background = '#95a5a6';
+                }, 2000);
+            });
+        }
+        
+        function clearAll() {
+            if (confirm('This will clear all data including generated QR codes. Continue?')) {
+                // Clear form
+                document.getElementById('credentialsForm').reset();
+                document.getElementById('outputContainer').classList.add('hidden');
+                document.getElementById('qrcode').innerHTML = '';
+                encryptedData = '';
+                updateSteps(1);
+                
+                if (countdownInterval) {
+                    clearInterval(countdownInterval);
+                }
+                
+                // Clear any password visibility toggles
+                document.querySelectorAll('input[type="text"]').forEach(input => {
+                    if (input.id === 'masterPassword' || input.id === 'clientSecret') {
+                        input.type = 'password';
+                    }
+                });
+                
+                document.querySelectorAll('.toggle-password').forEach(btn => {
+                    btn.textContent = '👁️';
+                });
+                
+                // Clear browser data for security
+                clearBrowserData();
+            }
+        }
+        
+        function clearBrowserData() {
+            try {
+                // Clear session storage
+                if (typeof(Storage) !== "undefined") {
+                    sessionStorage.clear();
+                    localStorage.clear();
+                }
+                
+                // Clear any cached form data
+                document.querySelectorAll('input').forEach(input => {
+                    input.value = '';
+                    input.removeAttribute('value');
+                });
+                
+                // Clear clipboard if possible (modern browsers)
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText('').catch(() => {
+                        // Ignore clipboard clear errors
+                    });
+                }
+                
+                // Overwrite variables with random data
+                if (encryptedData) {
+                    encryptedData = Math.random().toString(36).repeat(encryptedData.length);
+                    encryptedData = '';
+                }
+                
+                console.log('🗑️ Browser data cleared for security');
+                
+            } catch (error) {
+                console.warn('Some browser data could not be cleared:', error);
+            }
+        }
+        
+        // Force clear on page visibility change (tab switch, minimize, etc.)
+        document.addEventListener('visibilitychange', function() {
+            if (document.hidden) {
+                // Page is hidden, clear sensitive data
+                setTimeout(() => {
+                    if (document.hidden) { // Still hidden after delay
+                        clearBrowserData();
+                        console.log('🔒 Data cleared due to page visibility change');
+                    }
+                }, 5000); // 5 second delay
+            }
+        });
+        
+        // Clear on window blur (lost focus)
+        let blurTimeout;
+        window.addEventListener('blur', function() {
+            blurTimeout = setTimeout(() => {
+                clearBrowserData();
+                console.log('🔒 Data cleared due to window blur');
+            }, 10000); // 10 second delay
+        });
+        
+        window.addEventListener('focus', function() {
+            if (blurTimeout) {
+                clearTimeout(blurTimeout);
+            }
+        });
+        
+        // Clear data when page is closed/refreshed
+        window.addEventListener('beforeunload', function() {
+            clearAll();
+        });
+        
+        // Auto-clear after 1 hour for security
+        setTimeout(() => {
+            if (confirm('Session expired for security. Page will be cleared.')) {
+                clearAll();
+            }
+        }, 3600000); // 1 hour
+        
+        // Clear all data when page loads (fresh start)
+        window.addEventListener('load', function() {
+            clearAll();
+            
+            // Disable network after page is fully loaded
+            setTimeout(() => {
+                disableNetworkAccess();
+                showOfflineMode();
+            }, 2000); // Wait 2 seconds for any remaining resources
+        });
+        
+        function disableNetworkAccess() {
+            // Override XMLHttpRequest
+            const originalXHR = window.XMLHttpRequest;
+            window.XMLHttpRequest = function() {
+                throw new Error('Network access disabled for security');
+            };
+            
+            // Override fetch
+            const originalFetch = window.fetch;
+            window.fetch = function() {
+                return Promise.reject(new Error('Network access disabled for security'));
+            };
+            
+            // Block WebSocket connections
+            const originalWebSocket = window.WebSocket;
+            window.WebSocket = function() {
+                throw new Error('WebSocket access disabled for security');
+            };
+            
+            // Block EventSource
+            const originalEventSource = window.EventSource;
+            window.EventSource = function() {
+                throw new Error('EventSource access disabled for security');
+            };
+            
+            console.log('🔒 Network access has been disabled for maximum security');
+        }
+        
+        function forceOfflineMode() {
+            if (confirm('This will immediately disable all network access. Continue?')) {
+                disableNetworkAccess();
+                showOfflineMode();
+                
+                // Show confirmation
+                const confirmMsg = document.createElement('div');
+                confirmMsg.innerHTML = '✅ Network access disabled manually';
+                confirmMsg.style.cssText = `
+                    position: fixed;
+                    top: 50px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #27ae60;
+                    color: white;
+                    padding: 10px 20px;
+                    border-radius: 5px;
+                    z-index: 10001;
+                    font-weight: bold;
+                `;
+                document.body.appendChild(confirmMsg);
+                
+                setTimeout(() => {
+                    if (confirmMsg.parentNode) {
+                        confirmMsg.parentNode.removeChild(confirmMsg);
+                    }
+                }, 3000);
+            }
+        }
+        
+        function showOfflineMode() {
+            // Create offline indicator
+            const offlineIndicator = document.createElement('div');
+            offlineIndicator.innerHTML = '🔒 OFFLINE MODE - Network Disabled for Security';
+            offlineIndicator.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                background: linear-gradient(135deg, #27ae60, #2ecc71);
+                color: white;
+                text-align: center;
+                padding: 8px;
+                font-weight: bold;
+                font-size: 12px;
+                z-index: 10000;
+                box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            `;
+            document.body.prepend(offlineIndicator);
+            
+            // Update security badge
+            const securityBadge = document.querySelector('.security-badge');
+            if (securityBadge) {
+                securityBadge.innerHTML = '🔒 AES-256 Encrypted • Zero Cloud Storage • OFFLINE MODE';
+                securityBadge.style.background = 'linear-gradient(135deg, #27ae60, #2ecc71)';
+            }
+        }
+    </script>
+</body>
+</html>
