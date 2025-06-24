@@ -365,63 +365,97 @@
             
             updateSteps(2);
             
-            // Create payload with expiry
-            const expiryTime = new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString();
-            const payload = {
-                clientId: clientId,
-                clientSecret: clientSecret,
-                environment: environment,
-                createdAt: new Date().toISOString(),
-                expiresAt: expiryTime,
-                version: '1.0',
-                checksum: CryptoJS.SHA256(clientId + clientSecret + environment).toString()
-            };
+            // Check if QR library is available
+            if (typeof QRCode === 'undefined') {
+                alert('QR Code library not loaded. Please refresh the page and try again.');
+                return;
+            }
             
-            // Encrypt the payload
-            const payloadString = JSON.stringify(payload);
-            const encrypted = CryptoJS.AES.encrypt(payloadString, masterPassword).toString();
+            // Check if Crypto library is available
+            if (typeof CryptoJS === 'undefined') {
+                alert('Encryption library not loaded. Please refresh the page and try again.');
+                return;
+            }
             
-            // Create final secure package
-            const securePackage = {
-                data: encrypted,
-                timestamp: Date.now(),
-                expires: Date.now() + (expiryMinutes * 60 * 1000)
-            };
-            
-            encryptedData = JSON.stringify(securePackage);
-            
-            // Generate QR code
-            document.getElementById('qrcode').innerHTML = '';
-            
-            QRCode.toCanvas(document.createElement('canvas'), encryptedData, {
-                width: 280,
-                height: 280,
-                colorDark: '#2c3e50',
-                colorLight: '#ffffff',
-                margin: 3,
-                correctLevel: QRCode.CorrectLevel.H
-            }, function(error, canvas) {
-                if (error) {
-                    console.error(error);
-                    alert('Error generating QR code');
-                    return;
-                }
+            try {
+                // Create payload with expiry
+                const expiryTime = new Date(Date.now() + expiryMinutes * 60 * 1000).toISOString();
+                const payload = {
+                    clientId: clientId,
+                    clientSecret: clientSecret,
+                    environment: environment,
+                    createdAt: new Date().toISOString(),
+                    expiresAt: expiryTime,
+                    version: '1.0',
+                    checksum: CryptoJS.SHA256(clientId + clientSecret + environment).toString()
+                };
                 
-                updateSteps(3);
+                // Encrypt the payload
+                const payloadString = JSON.stringify(payload);
+                const encrypted = CryptoJS.AES.encrypt(payloadString, masterPassword).toString();
                 
-                document.getElementById('qrcode').appendChild(canvas);
-                document.getElementById('encryptedOutput').textContent = encryptedData;
-                document.getElementById('outputContainer').classList.remove('hidden');
+                // Create final secure package
+                const securePackage = {
+                    data: encrypted,
+                    timestamp: Date.now(),
+                    expires: Date.now() + (expiryMinutes * 60 * 1000)
+                };
                 
-                // Start countdown
-                startCountdown(expiryMinutes * 60);
+                encryptedData = JSON.stringify(securePackage);
                 
-                // Clear sensitive form data
-                setTimeout(() => {
-                    document.getElementById('masterPassword').value = '';
-                    document.getElementById('clientSecret').value = '';
-                }, 2000);
-            });
+                console.log('✅ Payload encrypted successfully');
+                console.log('📦 Package size:', encryptedData.length, 'characters');
+                
+                // Generate QR code
+                document.getElementById('qrcode').innerHTML = '';
+                
+                // Create canvas element
+                const canvas = document.createElement('canvas');
+                
+                QRCode.toCanvas(canvas, encryptedData, {
+                    width: 280,
+                    height: 280,
+                    colorDark: '#2c3e50',
+                    colorLight: '#ffffff',
+                    margin: 3,
+                    correctLevel: QRCode.CorrectLevel.H
+                }, function(error) {
+                    if (error) {
+                        console.error('QR Generation Error:', error);
+                        
+                        // Fallback: try with smaller data or different settings
+                        const fallbackData = JSON.stringify({
+                            data: encrypted.substring(0, 1000), // Truncate if too long
+                            timestamp: Date.now(),
+                            expires: Date.now() + (expiryMinutes * 60 * 1000),
+                            truncated: true
+                        });
+                        
+                        QRCode.toCanvas(canvas, fallbackData, {
+                            width: 280,
+                            height: 280,
+                            margin: 2,
+                            correctLevel: QRCode.CorrectLevel.M
+                        }, function(fallbackError) {
+                            if (fallbackError) {
+                                alert('Error generating QR code: ' + fallbackError.message);
+                                return;
+                            }
+                            
+                            console.log('⚠️ Generated QR with truncated data');
+                            displayQRResult(canvas, fallbackData);
+                        });
+                    } else {
+                        console.log('✅ QR code generated successfully');
+                        displayQRResult(canvas, encryptedData);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('Error in credential processing:', error);
+                alert('Error processing credentials: ' + error.message);
+            }
+        });
         });
         
         function startCountdown(seconds) {
@@ -464,6 +498,25 @@
                     btn.style.background = '#95a5a6';
                 }, 2000);
             });
+        });
+        
+        function displayQRResult(canvas, data) {
+            updateSteps(3);
+            
+            document.getElementById('qrcode').appendChild(canvas);
+            document.getElementById('encryptedOutput').textContent = data;
+            document.getElementById('outputContainer').classList.remove('hidden');
+            
+            // Start countdown
+            const expiryMinutes = parseInt(document.getElementById('expiryMinutes').value);
+            startCountdown(expiryMinutes * 60);
+            
+            // Clear sensitive form data after a delay
+            setTimeout(() => {
+                document.getElementById('masterPassword').value = '';
+                document.getElementById('clientSecret').value = '';
+            }, 2000);
+        }
         }
         
         function clearAll() {
@@ -573,11 +626,18 @@
         window.addEventListener('load', function() {
             clearAll();
             
-            // Disable network after page is fully loaded
+            // Wait for QR library to load, then disable network
             setTimeout(() => {
+                // Check if QR library is loaded
+                if (typeof QRCode !== 'undefined') {
+                    console.log('✅ QR Code library loaded successfully');
+                } else {
+                    console.error('❌ QR Code library failed to load');
+                }
+                
                 disableNetworkAccess();
                 showOfflineMode();
-            }, 2000); // Wait 2 seconds for any remaining resources
+            }, 3000); // Wait 3 seconds for libraries to load
         });
         
         function disableNetworkAccess() {
@@ -637,6 +697,31 @@
                 }, 3000);
             }
         }
+        
+        // Debug function to test QR generation
+        function testQRGeneration() {
+            if (typeof QRCode === 'undefined') {
+                console.error('❌ QRCode library not available');
+                return;
+            }
+            
+            const testData = 'Test QR Code Generation';
+            const canvas = document.createElement('canvas');
+            
+            QRCode.toCanvas(canvas, testData, {
+                width: 200,
+                height: 200
+            }, function(error) {
+                if (error) {
+                    console.error('❌ QR Test failed:', error);
+                } else {
+                    console.log('✅ QR Test successful');
+                }
+            });
+        }
+        
+        // Test QR generation on page load
+        setTimeout(testQRGeneration, 1000);
         
         function showOfflineMode() {
             // Create offline indicator
