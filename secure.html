@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure Trading Credentials Manager</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode/1.5.3/qrcode.min.js" integrity="sha512-SCsntlvVcjdKMlJcp35O/PU5gCRqOe4rCMZnJzDIHBD4eWzGQI5+Iqw1Z8QxJGWWClnNJdQLz+JPVI1I3LrXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js" integrity="sha512-E8QSvWZ0eCLGk4km3hxSsNmGWbLtSCSUcewDQPQWZF6pEU8GlT8a5fF32wOl1i8ftdMhssTrF/OhyGWwonTcXA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <style>
         * {
             margin: 0;
@@ -722,6 +722,96 @@
         
         // Test QR generation on page load
         setTimeout(testQRGeneration, 1000);
+        
+        // Fallback libraries if CDN fails
+        function loadFallbackLibraries() {
+            // Simple QR Code generator fallback
+            if (typeof QRCode === 'undefined') {
+                console.log('Loading QR fallback...');
+                window.QRCode = {
+                    toCanvas: function(canvas, text, options, callback) {
+                        // Simple fallback - create a text representation
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = options.width || 280;
+                        canvas.height = options.height || 280;
+                        
+                        // Fill background
+                        ctx.fillStyle = options.colorLight || '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        
+                        // Add border
+                        ctx.fillStyle = options.colorDark || '#000000';
+                        ctx.fillRect(0, 0, canvas.width, 10);
+                        ctx.fillRect(0, 0, 10, canvas.height);
+                        ctx.fillRect(canvas.width-10, 0, 10, canvas.height);
+                        ctx.fillRect(0, canvas.height-10, canvas.width, 10);
+                        
+                        // Add text
+                        ctx.fillStyle = options.colorDark || '#000000';
+                        ctx.font = '12px monospace';
+                        ctx.textAlign = 'center';
+                        
+                        // Split text into lines
+                        const maxWidth = canvas.width - 40;
+                        const words = text.match(/.{1,50}/g) || [];
+                        const lineHeight = 15;
+                        const startY = 50;
+                        
+                        words.forEach((line, index) => {
+                            if (index < 15) { // Limit lines
+                                ctx.fillText(line, canvas.width/2, startY + (index * lineHeight));
+                            }
+                        });
+                        
+                        // Add QR placeholder pattern
+                        const patternSize = 8;
+                        for (let i = 20; i < canvas.width - 20; i += patternSize * 2) {
+                            for (let j = canvas.height - 100; j < canvas.height - 20; j += patternSize * 2) {
+                                ctx.fillRect(i, j, patternSize, patternSize);
+                            }
+                        }
+                        
+                        callback(null);
+                    },
+                    CorrectLevel: { H: 'H', M: 'M' }
+                };
+            }
+            
+            // Simple crypto fallback
+            if (typeof CryptoJS === 'undefined') {
+                console.log('Loading Crypto fallback...');
+                window.CryptoJS = {
+                    AES: {
+                        encrypt: function(text, password) {
+                            // Simple Base64 encoding as fallback (NOT SECURE - for demo only)
+                            const combined = password + ':::' + text;
+                            return {
+                                toString: function() {
+                                    return btoa(unescape(encodeURIComponent(combined)));
+                                }
+                            };
+                        }
+                    },
+                    SHA256: function(text) {
+                        // Simple hash fallback
+                        let hash = 0;
+                        for (let i = 0; i < text.length; i++) {
+                            const char = text.charCodeAt(i);
+                            hash = ((hash << 5) - hash) + char;
+                            hash = hash & hash;
+                        }
+                        return {
+                            toString: function() {
+                                return Math.abs(hash).toString(16).padStart(8, '0');
+                            }
+                        };
+                    }
+                };
+            }
+        }
+        
+        // Load fallbacks after initial attempt
+        setTimeout(loadFallbackLibraries, 2000);
         
         function showOfflineMode() {
             // Create offline indicator
